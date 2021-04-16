@@ -11,12 +11,14 @@
       {% url 'ads' as ads %}
       <li {% if request.get_full_path == ads %}class="active"{% endif %}>
           <a href="{% url 'ads:all' %}">Ads</a></li>
+      {% url 'myproject' as myproject %}
+      <li {% if request.get_full_path == myproject %}class="active"{% endif %}>
+          <a href="{% url 'myproject:all' %}">Course Review on Coursera</a></li>
     </ul>
     <ul class="nav navbar-nav navbar-right">
         {% if user.is_authenticated %}
-        <li>
-        <a href="{% url 'ads:ad_create' %}">Create Ad</a>
-        </li>
+        <li><a href="{% url 'ads:ad_create' %}">Create Ad</a></li>
+        <li><a href="{% url 'myproject:cr_create' %}">Create Course Review</a></li>
         <li class="dropdown">
             <a href="#" data-toggle="dropdown" class="dropdown-toggle">
                 <img style="width: 25px;" src="{{ user|gravatar:60 }}"/><b class="caret"></b>

@@ -27,6 +27,7 @@ urlpatterns = [
     path('accounts/', include('django.contrib.auth.urls')),  # Keep
     url(r'^oauth/', include('social_django.urls', namespace='social')),  # Keep
     path('ads/', include('ads.urls')),
+    path('myproject/', include('myproject.urls')),
 ]
 
 # Serve the static HTML

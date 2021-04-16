@@ -9,21 +9,44 @@ from django.core.files.uploadedfile import InMemoryUploadedFile
 
 from ads.models import Ad, Fav, Comment
 from ads.forms import CreateForm, CommentForm
+from ads.utils import dump_queries
+from django.db.models import Q
+from django.contrib.humanize.templatetags.humanize import naturaltime
 
 class AdListView(OwnerListView):
     model = Ad
     template_name = "ads/ad_list.html"
 
-    def get(self, request) :
-        ad_list = Ad.objects.all()
+    def get(self, request):
         favorites = list()
         if request.user.is_authenticated:
             # rows = [{'id': 2}, {'id': 4} ... ]  (A list of rows)
             rows = request.user.favorite_ads.values('id')
             # favorites = [2, 4, ...] using list comprehension
             favorites = [ row['id'] for row in rows ]
-        ctx = {'ad_list' : ad_list, 'favorites': favorites}
-        return render(request, self.template_name, ctx)
+
+        strval =  request.GET.get("search", False)
+        if strval :
+            # Simple title-only search
+            # objects = Post.objects.filter(title__contains=strval).select_related().order_by('-updated_at')[:10]
+
+            # Multi-field search
+            # __icontains for case-insensitive search
+            query = Q(title__icontains=strval)
+            query.add(Q(text__icontains=strval), Q.OR)
+            query.add(Q(tags__name__in=[strval]), Q.OR)
+            objects = Ad.objects.filter(query).select_related().order_by('-updated_at')[:10]
+        else :
+            objects = Ad.objects.all().order_by('-updated_at')[:10]
+
+        # Augment the post_list
+        for obj in objects:
+            obj.natural_updated = naturaltime(obj.updated_at)
+
+        ctx = {'ad_list' : objects, 'favorites': favorites, 'search': strval}
+        retval = render(request, self.template_name, ctx)
+        dump_queries()
+        return retval
 
 
 class AdDetailView(OwnerDetailView):
@@ -57,6 +80,8 @@ class AdCreateView(LoginRequiredMixin, View):
         ad = form.save(commit=False)
         ad.owner = self.request.user
         ad.save()
+        form.save_m2m()
+
         return redirect(self.success_url)
 
 
@@ -80,6 +105,7 @@ class AdUpdateView(LoginRequiredMixin, View):
 
         ad = form.save(commit=False)
         ad.save()
+        form.save_m2m()
 
         return redirect(self.success_url)
 

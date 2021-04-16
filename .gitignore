@@ -2,4 +2,6 @@
 __pycache__
 *.sqlite3
 .DS_Store
+github_settings.py
 *.pyc
+myproject

@@ -48,6 +48,7 @@ INSTALLED_APPS = [
     'taggit',
     'home.apps.HomeConfig',
     'ads.apps.AdsConfig',
+    'myproject.apps.MyprojectConfig',
 ]
 
 # When we get to crispy forms :)
